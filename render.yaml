@@ -8,8 +8,8 @@ services:
     name: nullsec
     runtime: static
     plan: free
-    region: oregon            # change to: ohio | virginia | frankfurt | singapore | etc.
     branch: main
+    # NOTE: static sites are served from Render's global CDN — no `region` field.
     autoDeploy: true
     pullRequestPreviewsEnabled: true
 

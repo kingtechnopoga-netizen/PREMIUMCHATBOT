@@ -79,8 +79,8 @@ This repo ships with a [`render.yaml`](./render.yaml) Blueprint — Render will 
 
 ### Tweaks
 
-- Change the region in `render.yaml` (`region:` line) — closer = faster.
-- Want a paid plan with custom SSL on apex domains? Change `plan: free` to `plan: starter`.
+- Want a paid plan with custom SSL on apex domains and always-on (no cold start)? Change `plan: free` to `plan: starter`.
+- Static sites on Render are served from a **global CDN automatically** — no region selection needed.
 
 ---
 
