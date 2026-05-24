@@ -23,6 +23,40 @@
   <link rel="stylesheet" href="css/animations.css" />
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2306080a'/%3E%3Cpath d='M16 18 L16 46 M16 18 L34 46 M34 18 L34 46' stroke='%2300ffae' stroke-width='3' fill='none'/%3E%3Ccircle cx='46' cy='32' r='4' fill='%2300ffae'/%3E%3C/svg%3E" />
+  <script>
+    /* ULTRA-BULLETPROOF emergency handlers — these run before anything else
+       loads, so the user can ALWAYS escape the page even if JS bundles fail. */
+
+    // Emergency reset — visit ?reset or #reset to wipe and reload fresh.
+    (function () {
+      try {
+        if (location.search.indexOf("reset") !== -1 || location.hash.indexOf("reset") !== -1) {
+          try { localStorage.clear(); } catch (_) {}
+          try { sessionStorage.clear(); } catch (_) {}
+          location.replace(location.origin + location.pathname);
+        }
+      } catch (_) {}
+    })();
+
+    // Global, always-available helpers reachable from inline onclick handlers.
+    window.NS_close = function (id) {
+      var m = document.getElementById(id);
+      if (m) m.hidden = true;
+      try { document.body.classList.remove("modal-open"); } catch (_) {}
+    };
+    window.NS_reload = function () {
+      try { localStorage.clear(); } catch (_) {}
+      location.replace(location.origin + location.pathname);
+    };
+
+    // Pressing Escape ALWAYS hides any open modal (works even before ui.js loads).
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        var open = document.querySelectorAll(".modal:not([hidden])");
+        for (var i = 0; i < open.length; i++) window.NS_close(open[i].id);
+      }
+    });
+  </script>
 </head>
 <body>
   <!-- Ambient background layers -->
@@ -37,8 +71,8 @@
     <div class="bg-scan"></div>
   </div>
 
-  <!-- Cinematic boot sequence -->
-  <section id="boot" class="boot" aria-label="Boot sequence">
+  <!-- Cinematic boot sequence (tap-anywhere-to-skip via inline onclick) -->
+  <section id="boot" class="boot" aria-label="Boot sequence" onclick="this.classList.add('done'); setTimeout(function(){var b=document.getElementById('boot');if(b)b.remove();var a=document.getElementById('app');if(a){a.classList.add('ready');a.setAttribute('aria-hidden','false');}},200)">
     <div class="boot-frame">
       <div class="boot-brand">
         <div class="boot-logo">
@@ -347,14 +381,15 @@
     </aside>
   </main>
 
-  <!-- Settings modal -->
+  <!-- Settings modal — close handlers use INLINE onclick so they ALWAYS work,
+       even if ui.js fails to load or run. Multiple escape paths included. -->
   <div class="modal" id="settings-modal" hidden>
-    <div class="modal-backdrop" data-close></div>
+    <div class="modal-backdrop" data-close onclick="NS_close('settings-modal')"></div>
     <div class="modal-card">
-      <button class="modal-x" data-close aria-label="close">✕</button>
+      <button class="modal-x" data-close onclick="NS_close('settings-modal')" aria-label="close">✕</button>
       <header class="modal-head">
         <h3>settings</h3>
-        <button class="icon-btn ghost" data-close aria-label="close">✕</button>
+        <button class="icon-btn ghost" data-close onclick="NS_close('settings-modal')" aria-label="close">✕</button>
       </header>
       <div class="modal-body">
         <div class="setting-row">
@@ -389,11 +424,12 @@
           <label>danger zone</label>
           <div class="row gap">
             <button class="ghost-btn warn" id="wipe-all">wipe all sessions</button>
+            <button class="ghost-btn warn" onclick="NS_reload()">force fresh reload</button>
           </div>
         </div>
       </div>
       <footer class="modal-foot">
-        <button class="ghost-btn" data-close>close</button>
+        <button class="ghost-btn" data-close onclick="NS_close('settings-modal')">close</button>
         <button class="primary-btn" id="settings-save">save</button>
       </footer>
     </div>
