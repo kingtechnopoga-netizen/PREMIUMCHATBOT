@@ -1,0 +1,53 @@
+# ============================================================
+# NULLSEC — Render Blueprint
+# Deploys this repo as a static site (no backend required).
+# Docs: https://render.com/docs/blueprint-spec
+# ============================================================
+services:
+  - type: web
+    name: nullsec
+    runtime: static
+    plan: free
+    region: oregon            # change to: ohio | virginia | frankfurt | singapore | etc.
+    branch: main
+    autoDeploy: true
+    pullRequestPreviewsEnabled: true
+
+    # No build step — pure HTML/CSS/JS. Use a no-op so Render is happy.
+    buildCommand: "echo 'NULLSEC :: static site, no build required'"
+
+    # Repo root is the publish directory (index.html lives there).
+    staticPublishPath: .
+
+    # SPA-style fallback so deep links (e.g. ?session=xyz) still serve index.html.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    # Long cache for CSS / JS (filenames are stable; bust by editing).
+    # Short cache for the HTML shell so updates roll out fast.
+    headers:
+      - path: /index.html
+        name: Cache-Control
+        value: "public, max-age=0, must-revalidate"
+      - path: /css/*
+        name: Cache-Control
+        value: "public, max-age=86400, stale-while-revalidate=604800"
+      - path: /js/*
+        name: Cache-Control
+        value: "public, max-age=86400, stale-while-revalidate=604800"
+
+      # Security headers — keep them mild so puter.js + CDNs continue to work.
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: "camera=(), geolocation=(), microphone=(self)"
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN

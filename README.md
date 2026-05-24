@@ -46,6 +46,44 @@ npx serve .
 
 ---
 
+## Deploy to Render (Blueprint)
+
+This repo ships with a [`render.yaml`](./render.yaml) Blueprint — Render will read it and provision a free static site in one click.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/kingtechnopoga-netizen/PREMIUMCHATBOT)
+
+### Step-by-step
+
+1. Push this repo to GitHub (already done if you're reading this on GitHub).
+2. Go to **[dashboard.render.com](https://dashboard.render.com)** → **New** → **Blueprint**.
+3. Connect your GitHub account if you haven't already, then pick the `PREMIUMCHATBOT` repo.
+4. Render auto-detects `render.yaml` and shows a preview — service name `nullsec`, type **Static Site**, plan **Free**.
+5. Click **Apply** → Render builds and deploys.
+6. Your app will be live at `https://nullsec.onrender.com` (or whatever subdomain you chose).
+
+### What the blueprint configures
+
+- Static site on Render's free tier (`runtime: static`, `plan: free`)
+- No build step — files are served as-is from the repo root
+- SPA-style rewrite (`/*` → `/index.html`) so deep links work
+- Long cache (`max-age=86400` + `stale-while-revalidate`) for `/css/*` and `/js/*`
+- No-cache for `index.html` so updates roll out instantly
+- Mild security headers (`X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options`) that don't break Puter.js, Google Fonts, or the CDN libs
+
+### After deploy
+
+- Open the Render dashboard → your service → **Settings** to:
+  - Add a **custom domain** (e.g. `nullsec.yourdomain.com`)
+  - Enable **auto-deploy** (already on by default — every push to `main` redeploys)
+  - Toggle **PR previews** (already on — every PR gets its own preview URL)
+
+### Tweaks
+
+- Change the region in `render.yaml` (`region:` line) — closer = faster.
+- Want a paid plan with custom SSL on apex domains? Change `plan: free` to `plan: starter`.
+
+---
+
 ## Project structure
 
 ```
