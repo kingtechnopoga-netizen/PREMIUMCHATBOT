@@ -1,0 +1,195 @@
+/* ============================================================
+   NULLSEC · components.css
+   buttons · modals · toasts · misc
+   ============================================================ */
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  color: var(--t-2);
+  transition: color var(--t-fast), background var(--t-fast), border-color var(--t-fast);
+}
+.icon-btn:hover { color: var(--t-0); background: rgba(255,255,255,0.04); }
+.icon-btn.ghost { background: transparent; }
+.icon-btn.solid {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line);
+}
+.icon-btn:active { transform: scale(0.96); }
+
+.primary-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--acc), #6ff0c1);
+  color: #06080a;
+  font-weight: 500;
+  font-size: 13px;
+  box-shadow: 0 6px 18px var(--acc-glow);
+  transition: filter var(--t-fast), transform var(--t-fast);
+}
+.primary-btn:hover { filter: brightness(1.06); }
+.primary-btn:active { transform: scale(0.985); }
+
+.ghost-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--line-2);
+  font-size: 13px;
+  color: var(--t-1);
+  transition: all var(--t-fast);
+}
+.ghost-btn:hover { background: rgba(255,255,255,0.05); color: var(--t-0); }
+.ghost-btn.warn { color: var(--warn); border-color: rgba(255,93,108,0.32); }
+.ghost-btn.warn:hover { background: rgba(255,93,108,0.08); }
+
+/* ---------- modal ---------- */
+.modal {
+  position: fixed; inset: 0;
+  z-index: var(--z-modal);
+  display: grid; place-items: center;
+}
+.modal-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  animation: fade-in var(--t-mid) var(--ease-out);
+}
+.modal-card {
+  position: relative;
+  width: min(560px, 92vw);
+  max-height: 86vh;
+  overflow: auto;
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-pop);
+  animation: pop-in 280ms var(--ease-out);
+}
+.modal-card::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, rgba(44,229,160,0.32), transparent 40%, rgba(86,182,242,0.32));
+  -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: 0.18;
+  pointer-events: none;
+}
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.modal-head h3 { font-size: 15px; font-family: var(--f-disp); }
+.modal-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+.modal-foot {
+  padding: 12px 18px;
+  border-top: 1px solid var(--line);
+  display: flex; justify-content: flex-end; gap: 8px;
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.setting-row { display: flex; flex-direction: column; gap: 6px; }
+.setting-row > label {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  color: var(--t-2);
+  text-transform: uppercase;
+}
+.setting-row textarea,
+.setting-row select,
+.setting-row input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--t-0);
+}
+.setting-row textarea { font-family: var(--f-mono); }
+.setting-row select option { background: var(--bg-2); }
+.setting-row.split { flex-direction: row; gap: 14px; }
+.setting-row.split > div { flex: 1; }
+.setting-row input[type="range"] {
+  width: 100%; -webkit-appearance: none; appearance: none;
+  height: 4px; background: var(--line-2); border-radius: 4px;
+  margin: 8px 0;
+}
+.setting-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--acc);
+  box-shadow: 0 0 10px var(--acc-glow);
+  cursor: pointer;
+}
+
+/* ---------- toasts ---------- */
+.toasts {
+  position: fixed;
+  bottom: 18px; right: 18px;
+  display: flex; flex-direction: column; gap: 8px;
+  z-index: var(--z-toast);
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(20,24,32,0.85);
+  border: 1px solid var(--line-2);
+  backdrop-filter: blur(12px);
+  font-size: 13px;
+  color: var(--t-0);
+  box-shadow: var(--sh-2);
+  animation: toast-in 260ms var(--ease-out);
+}
+.toast.ok .toast-led { background: var(--acc); box-shadow: 0 0 8px var(--acc-glow); }
+.toast.warn .toast-led { background: var(--warn); box-shadow: 0 0 8px var(--warn-glow); }
+.toast.info .toast-led { background: var(--cyn); box-shadow: 0 0 8px var(--cyn-glow); }
+.toast .toast-led {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--t-2);
+}
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes toast-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-6px); } }
+.toast.out { animation: toast-out 220ms var(--ease-in) forwards; }
+
+@media (max-width: 480px) {
+  .toasts { left: 12px; right: 12px; bottom: 12px; }
+  .toast { font-size: 12.5px; }
+}
+
+/* tooltips (data-tip) */
+[data-tip] { position: relative; }
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%; transform: translateX(-50%) translateY(2px);
+  background: var(--bg-3);
+  color: var(--t-1);
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-fast), transform var(--t-fast);
+  z-index: 90;
+}
+[data-tip]:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
