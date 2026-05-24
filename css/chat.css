@@ -352,6 +352,7 @@
 .composer-wrap {
   position: relative;
   padding: 0 18px 12px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
   background: linear-gradient(180deg, transparent, var(--bg-0) 60%);
 }
 .attach-bar {
@@ -432,6 +433,8 @@
   color: var(--t-0);
   caret-color: var(--acc);
   font-family: var(--f-sans);
+  -webkit-appearance: none;
+  appearance: none;
 }
 #input::placeholder { color: var(--t-3); }
 
@@ -469,6 +472,7 @@
 /* ---------- donation footer ---------- */
 .donation {
   padding: 10px 18px 22px;
+  padding-bottom: max(22px, env(safe-area-inset-bottom));
 }
 .donation-card {
   position: relative;

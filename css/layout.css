@@ -345,13 +345,30 @@
   color: var(--t-0);
   letter-spacing: -0.01em;
   outline: 0;
-  cursor: text;
+  cursor: default;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 60vw;
+  user-select: none;
 }
+.chat-title.editing { user-select: text; cursor: text; }
 .chat-title:focus { color: var(--acc); }
+.chat-title.editing {
+  background: rgba(44, 229, 160, 0.06);
+  outline: 1px solid rgba(44, 229, 160, 0.32);
+  border-radius: 6px;
+  padding: 0 6px;
+  color: var(--acc);
+}
+.title-edit {
+  width: 24px; height: 24px;
+  opacity: 0;
+  transition: opacity var(--t-fast);
+}
+.title-row:hover .title-edit,
+.title-edit:focus { opacity: 1; }
+@media (hover: none) { .title-edit { opacity: 1; } }
 .title-meta {
   font-family: var(--f-mono);
   font-size: 10.5px;
@@ -678,6 +695,33 @@
   transition: opacity var(--t-mid);
 }
 .drawer-backdrop.show { opacity: 1; pointer-events: auto; }
+
+/* ============================================================
+   mobile-specific touch refinements
+   ============================================================ */
+@media (max-width: 880px) {
+  /* iOS: any input < 16px font causes zoom-in on focus — bump them */
+  #input,
+  #search,
+  .cx-area,
+  .setting-row textarea,
+  .setting-row select,
+  .setting-row input[type="text"],
+  .chat-title.editing { font-size: 16px !important; }
+
+  /* model picker menu — anchor right but stay on-screen */
+  .mp-menu {
+    right: -8px;
+    min-width: min(320px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+  }
+}
+
+/* mobile keyboard handler — chat shrinks while keyboard is open
+   (toggled by JS via .kb-open on body using visualViewport API) */
+body.kb-open .donation,
+body.kb-open .mode-strip { display: none; }
+body.kb-open .composer-foot { padding-bottom: 0; }
 
 /* collapsed sidebar */
 .app[data-collapsed="1"] .sidebar .brand-text,

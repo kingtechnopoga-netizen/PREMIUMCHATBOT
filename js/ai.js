@@ -307,8 +307,41 @@
       }
       onDone({ aborted });
     } catch (e) {
-      if (!aborted) onError(e);
-      else onDone({ aborted: true });
+      if (aborted) return onDone({ aborted: true });
+
+      // Detect auth-related errors and try interactive sign-in once
+      const msg = String(e && (e.message || e.error || e) || "").toLowerCase();
+      const isAuth = msg.includes("auth") || msg.includes("login") ||
+                     msg.includes("sign") || msg.includes("permission") ||
+                     msg.includes("401") || msg.includes("403") || msg.includes("token");
+
+      if (isAuth && window.puter && window.puter.auth && typeof window.puter.auth.signIn === "function") {
+        try {
+          await window.puter.auth.signIn();
+          // retry once after sign-in
+          const retry = await window.puter.ai.chat(messages, {
+            model, stream: true,
+            temperature: Math.max(0, Math.min(2, parseFloat(settings.temperature) || 0.7)),
+          });
+          if (retry && typeof retry[Symbol.asyncIterator] === "function") {
+            for await (const part of retry) {
+              if (aborted) break;
+              const piece = extractText(part);
+              if (piece) onChunk(piece);
+            }
+          } else {
+            const piece = extractText(retry);
+            if (piece) onChunk(piece);
+          }
+          return onDone({ aborted });
+        } catch (signErr) {
+          return onError(new Error(
+            "puter sign-in required — tap the prompt that appeared, or visit puter.com to sign in, then retry"
+          ));
+        }
+      }
+
+      onError(e);
     }
   }
 

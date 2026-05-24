@@ -221,6 +221,32 @@
   }
 
   function bindEditableTitle() {
+    const $titleEdit = document.getElementById("title-edit");
+
+    function startEdit() {
+      $title.setAttribute("contenteditable", "true");
+      $title.classList.add("editing");
+      $title.focus();
+      // select all text
+      const range = document.createRange();
+      range.selectNodeContents($title);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+    function stopEdit() {
+      $title.removeAttribute("contenteditable");
+      $title.classList.remove("editing");
+    }
+
+    $titleEdit && $titleEdit.addEventListener("click", () => {
+      if ($title.classList.contains("editing")) stopEdit();
+      else startEdit();
+    });
+
+    // Desktop: double-click title to edit; single tap on mobile won't trigger
+    $title.addEventListener("dblclick", startEdit);
+
     $title.addEventListener("keydown", (e) => {
       if (e.key === "Enter") { e.preventDefault(); $title.blur(); }
       if (e.key === "Escape") {
@@ -230,6 +256,9 @@
       }
     });
     $title.addEventListener("blur", () => {
+      const wasEditing = $title.classList.contains("editing");
+      stopEdit();
+      if (!wasEditing) return;
       const c = NS.store.getActive();
       if (!c) return;
       const t = ($title.textContent || "").trim() || "untitled session";

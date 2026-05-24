@@ -2,8 +2,11 @@
 <html lang="en" data-theme="onyx">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#06080a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="description" content="NULLSEC // Elite AI Operating System — a premium hacker-grade chatbot powered by Puter." />
   <title>NULLSEC — Elite AI Operating System</title>
 
@@ -145,7 +148,10 @@
         <div class="topbar-title">
           <div class="title-row">
             <span class="status-led" title="online"></span>
-            <h1 id="chat-title" class="chat-title" contenteditable="true" spellcheck="false">untitled session</h1>
+            <h1 id="chat-title" class="chat-title" spellcheck="false">untitled session</h1>
+            <button class="icon-btn ghost title-edit" id="title-edit" aria-label="rename session" title="rename">
+              <svg viewBox="0 0 24 24" width="14" height="14"><path d="M3 21h4l11-11-4-4L3 17v4z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+            </button>
           </div>
           <div class="title-meta">
             <span id="chat-meta-model">gpt-5-nano</span>
