@@ -7,9 +7,9 @@ services:
   - type: web
     name: nullsec
     runtime: static
-    plan: free
     branch: main
-    # NOTE: static sites are served from Render's global CDN — no `region` field.
+    # NOTE: static sites on Render are always free-tier and served from a
+    #       global CDN — they accept neither `plan` nor `region`.
     autoDeploy: true
     pullRequestPreviewsEnabled: true
 
