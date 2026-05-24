@@ -382,9 +382,35 @@
   // ============================================================
   function bindSettings() {
     $settingsBtn && $settingsBtn.addEventListener("click", () => openSettings());
-    $settingsModal.querySelectorAll("[data-close]").forEach((el) =>
-      el.addEventListener("click", () => closeModal())
-    );
+    // Close on any element with data-close (X button, footer close, backdrop)
+    $settingsModal.addEventListener("click", (e) => {
+      if (e.target.closest("[data-close]")) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeModal();
+      }
+    });
+    // Escape key always closes any open modal
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !$settingsModal.hidden) {
+        closeModal();
+      }
+    });
+    // Swipe-down on mobile closes the modal
+    let touchStartY = 0;
+    $settingsModal.addEventListener("touchstart", (e) => {
+      if (e.touches[0]) touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    $settingsModal.addEventListener("touchend", (e) => {
+      const t = (e.changedTouches && e.changedTouches[0]);
+      if (!t) return;
+      const dy = t.clientY - touchStartY;
+      // Swipe down on the card top area or backdrop closes it
+      if (dy > 100 && (e.target === $settingsModal || e.target.closest(".modal-backdrop, .modal-head"))) {
+        closeModal();
+      }
+    }, { passive: true });
+
     $settingsSave && $settingsSave.addEventListener("click", () => {
       const s = {
         systemPrompt: document.getElementById("setting-system").value,
@@ -418,8 +444,25 @@
     document.getElementById("setting-temp-val").textContent = (s.temperature ?? 0.7).toFixed(1);
     document.getElementById("setting-memory").value = s.memory || "on";
     $settingsModal.hidden = false;
+    document.body.classList.add("modal-open");
+    // Push a history entry so the device "back" button closes the modal
+    try { history.pushState({ modal: "settings" }, ""); } catch (_) {}
   }
-  function closeModal() { $settingsModal.hidden = true; }
+  function closeModal() {
+    $settingsModal.hidden = true;
+    document.body.classList.remove("modal-open");
+    // Pop the history entry we pushed in openSettings (if back wasn't pressed)
+    if (history.state && history.state.modal === "settings") {
+      try { history.back(); } catch (_) {}
+    }
+  }
+  // Browser back button closes the modal
+  window.addEventListener("popstate", () => {
+    if ($settingsModal && !$settingsModal.hidden) {
+      $settingsModal.hidden = true;
+      document.body.classList.remove("modal-open");
+    }
+  });
 
   // ============================================================
   // import / export

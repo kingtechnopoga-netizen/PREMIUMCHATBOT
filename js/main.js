@@ -5,6 +5,17 @@
 (function () {
   "use strict";
 
+  // EMERGENCY: ?reset wipes localStorage and reloads. Visit
+  // https://nullsec.onrender.com/?reset if anything ever locks up.
+  try {
+    if (location.search.indexOf("reset") !== -1) {
+      try { localStorage.clear(); } catch (_) {}
+      try { sessionStorage.clear(); } catch (_) {}
+      location.replace(location.origin + location.pathname);
+      return;
+    }
+  } catch (_) {}
+
   function ready(cb) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", cb);
@@ -16,7 +27,9 @@
     const app = document.getElementById("app");
     if (boot && !boot.classList.contains("done")) {
       boot.classList.add("done");
-      setTimeout(() => boot && boot.remove(), 600);
+      // Detach immediately on mobile so it can't capture taps.
+      const isMobile = window.matchMedia("(max-width: 880px)").matches;
+      setTimeout(() => boot && boot.remove(), isMobile ? 200 : 600);
     }
     if (app) {
       app.classList.add("ready");
@@ -26,28 +39,31 @@
 
   ready(async function () {
     const NS = window.NULLSEC || {};
+    const isMobile = window.matchMedia("(max-width: 880px)").matches;
 
-    // Hard failsafe: app shell is visible after 1.5s no matter what.
-    const FAILSAFE = setTimeout(showApp, 1500);
+    // On mobile, skip the boot animation entirely — go straight to the app.
+    if (isMobile) {
+      showApp();
+    }
 
-    // Tap-anywhere on the boot screen to skip it (escape hatch).
-    const boot = document.getElementById("boot");
-    if (boot) {
-      boot.addEventListener("click", () => {
-        clearTimeout(FAILSAFE);
-        showApp();
-      }, { passive: true });
-      boot.addEventListener("touchend", () => {
-        clearTimeout(FAILSAFE);
-        showApp();
-      }, { passive: true });
+    // Hard failsafe: app shell is visible after 1.2s no matter what.
+    const FAILSAFE = setTimeout(showApp, 1200);
+
+    // Tap-anywhere on the boot screen (and its document) to skip it instantly.
+    const bootEl = document.getElementById("boot");
+    if (bootEl) {
+      const skipBoot = () => { clearTimeout(FAILSAFE); showApp(); };
+      bootEl.addEventListener("click", skipBoot, { passive: true });
+      bootEl.addEventListener("touchend", skipBoot, { passive: true });
     }
 
     // 1) start ambient bg effects (independent of boot)
     try { NS.effects && NS.effects.start(); } catch (e) { console.warn(e); }
 
-    // 2) cinematic boot sequence
-    try { NS.effects && (await NS.effects.runBoot()); } catch (e) { console.warn(e); }
+    // 2) cinematic boot sequence (skipped on mobile via showApp() above)
+    if (!isMobile) {
+      try { NS.effects && (await NS.effects.runBoot()); } catch (e) { console.warn(e); }
+    }
 
     clearTimeout(FAILSAFE);
     showApp();

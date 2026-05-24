@@ -8,45 +8,48 @@ services:
     name: nullsec
     runtime: static
     branch: main
-    # NOTE: static sites on Render are always free-tier and served from a
-    #       global CDN — they accept neither `plan` nor `region`.
     autoDeploy: true
     pullRequestPreviewsEnabled: true
 
-    # Build copies only the production files into ./dist so Render serves a
-    # clean directory (no .git, no render.yaml, no README). This also makes
-    # the publish path unambiguous to Render's deploy worker.
+    # Build copies production files into ./dist so Render serves a clean
+    # directory (no .git, README, render.yaml). It also stamps every CSS / JS
+    # reference in index.html with the current commit SHA, so cached browsers
+    # always get fresh assets after a deploy.
     buildCommand: |
       set -e
       rm -rf dist
       mkdir -p dist
-      cp index.html dist/
       cp -r css dist/css
       cp -r js  dist/js
-      echo "[nullsec] dist contents:" && ls -la dist
+      VER="${RENDER_GIT_COMMIT:-$(date +%s)}"
+      VER="${VER:0:8}"
+      sed -E "s|(href=\"css/[a-z]+\\.css)\"|\\1?v=${VER}\"|g; s|(src=\"js/[a-z]+\\.js)\"|\\1?v=${VER}\"|g" index.html > dist/index.html
+      echo "[nullsec] dist (v=${VER}):" && ls -la dist && echo "---" && grep -E "(css|js)\\?v=" dist/index.html | head -5
 
     staticPublishPath: ./dist
 
-    # SPA-style fallback so deep links (e.g. ?session=xyz) still serve index.html.
+    # SPA-style fallback so deep links still serve index.html.
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
 
-    # Long cache for CSS / JS (filenames are stable; bust by editing).
-    # Short cache for the HTML shell so updates roll out fast.
     headers:
+      # Always revalidate the HTML shell so updates roll out instantly.
       - path: /index.html
         name: Cache-Control
         value: "public, max-age=0, must-revalidate"
+
+      # Short cache for assets while we iterate. Combined with ?v=<sha>
+      # query params, browsers get fresh JS/CSS within 5 min of any deploy.
       - path: /css/*
         name: Cache-Control
-        value: "public, max-age=86400, stale-while-revalidate=604800"
+        value: "public, max-age=300, must-revalidate"
       - path: /js/*
         name: Cache-Control
-        value: "public, max-age=86400, stale-while-revalidate=604800"
+        value: "public, max-age=300, must-revalidate"
 
-      # Security headers — keep them mild so puter.js + CDNs continue to work.
+      # Security headers — mild enough to not break Puter.js or CDNs.
       - path: /*
         name: X-Content-Type-Options
         value: nosniff
