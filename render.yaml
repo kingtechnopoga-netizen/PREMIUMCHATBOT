@@ -13,11 +13,19 @@ services:
     autoDeploy: true
     pullRequestPreviewsEnabled: true
 
-    # No build step — pure HTML/CSS/JS. Use a no-op so Render is happy.
-    buildCommand: "echo 'NULLSEC :: static site, no build required'"
+    # Build copies only the production files into ./dist so Render serves a
+    # clean directory (no .git, no render.yaml, no README). This also makes
+    # the publish path unambiguous to Render's deploy worker.
+    buildCommand: |
+      set -e
+      rm -rf dist
+      mkdir -p dist
+      cp index.html dist/
+      cp -r css dist/css
+      cp -r js  dist/js
+      echo "[nullsec] dist contents:" && ls -la dist
 
-    # Repo root is the publish directory (index.html lives there).
-    staticPublishPath: .
+    staticPublishPath: ./dist
 
     # SPA-style fallback so deep links (e.g. ?session=xyz) still serve index.html.
     routes:
