@@ -49,6 +49,11 @@
   mix-blend-mode: overlay;
   pointer-events: none;
 }
+@media (max-width: 880px), (pointer: coarse) {
+  .bg-noise { display: none; }
+  .bg-fog   { filter: blur(80px); opacity: 0.22; }
+  .bg-scan  { display: none; }
+}
 
 #bg-particles, #bg-matrix {
   position: absolute;
@@ -715,12 +720,25 @@
     min-width: min(320px, calc(100vw - 24px));
     max-width: calc(100vw - 24px);
   }
+
+  /* backdrop-filter is a known perf killer on Android Chrome / Brave —
+     drop it on mobile and use a plain dark fill instead. */
+  .sidebar,
+  .topbar,
+  .composer,
+  .donation-card,
+  .mp-menu {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .sidebar  { background: rgba(8,10,14,0.96); }
+  .topbar   { background: rgba(8,10,14,0.92); }
+  .composer { background: rgba(14,18,23,0.96); }
+  .mp-menu  { background: rgba(14,18,23,0.98); }
 }
 
-/* mobile keyboard handler — chat shrinks while keyboard is open
-   (toggled by JS via .kb-open on body using visualViewport API) */
-body.kb-open .donation,
-body.kb-open .mode-strip { display: none; }
+/* mobile keyboard helper class — kept for legacy; toggle removed in favor
+   of native browser keyboard handling. Empty rule preserved for future use. */
 body.kb-open .composer-foot { padding-bottom: 0; }
 
 /* collapsed sidebar */

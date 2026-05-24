@@ -11,8 +11,12 @@
   // ---------- env ----------
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const isMobile = window.matchMedia("(max-width: 880px)").matches;
+  const isCoarse = window.matchMedia("(pointer: coarse)").matches;
   const lowMem = (navigator.deviceMemory && navigator.deviceMemory <= 4) || isMobile;
-  const dpr = Math.min(window.devicePixelRatio || 1, lowMem ? 1.25 : 2);
+  const dpr = Math.min(window.devicePixelRatio || 1, lowMem ? 1 : 2);
+  // Disable heavy effects on mobile / touch / low-memory devices.
+  // Subtle ambient (fog, noise, grid, scanlines) stays — those are CSS only.
+  const HEAVY_OK = !reduceMotion && !isMobile && !isCoarse && !lowMem;
 
   // ---------- shared ----------
   let running = !document.hidden;
@@ -33,10 +37,11 @@
   function startParticles() {
     const canvas = document.getElementById("bg-particles");
     if (!canvas) return;
+    if (!HEAVY_OK) { canvas.style.display = "none"; return; }
     let ctx = fitCanvas(canvas);
     let W = canvas.clientWidth, H = canvas.clientHeight;
 
-    const COUNT = reduceMotion ? 0 : (lowMem ? 36 : 78);
+    const COUNT = 64;
     const particles = [];
     const mouse = { x: W / 2, y: H / 2, active: false };
 
@@ -128,7 +133,7 @@
       }
 
       // sparse connection lines (only on desktop)
-      if (!lowMem) {
+      if (HEAVY_OK) {
         for (let i = 0; i < particles.length; i++) {
           const p = particles[i];
           for (let j = i + 1; j < particles.length; j++) {
@@ -160,7 +165,7 @@
     let ctx = fitCanvas(canvas);
     let W = canvas.clientWidth, H = canvas.clientHeight;
 
-    if (reduceMotion) return;
+    if (reduceMotion || !HEAVY_OK) return;
 
     const FONT = 13;
     const COL_W = 18;
@@ -182,7 +187,7 @@
       if (!running) return;
       // Throttle to ~22fps for low overhead
       frameNo++;
-      if (frameNo % (lowMem ? 4 : 3) !== 0) return;
+      if (frameNo % 3 !== 0) return;
 
       // soft trail
       ctx.fillStyle = "rgba(4, 6, 10, 0.18)";
@@ -264,7 +269,8 @@
     return new Promise((resolve) => {
       let i = 0;
       const total = BOOT_LINES.length;
-      const stepDelay = 110; // ms per line
+      // Faster on mobile so the boot screen doesn't linger.
+      const stepDelay = (isMobile || isCoarse) ? 60 : 110;
 
       function tick() {
         if (i < total) {
@@ -286,16 +292,16 @@
           stage.textContent = STAGES[Math.min(STAGES.length - 1, Math.floor((i + 1) / total * STAGES.length))];
 
           i++;
-          setTimeout(tick, stepDelay + Math.random() * 80);
+          setTimeout(tick, stepDelay + Math.random() * 40);
         } else {
           stage.textContent = "ready.";
           setTimeout(() => {
             root.classList.add("done");
             const app = document.getElementById("app");
-            app.classList.add("ready");
-            app.setAttribute("aria-hidden", "false");
-            setTimeout(() => { root && root.remove(); resolve(); }, 700);
-          }, 360);
+            app && app.classList.add("ready");
+            app && app.setAttribute("aria-hidden", "false");
+            setTimeout(() => { root && root.parentNode && root.remove(); resolve(); }, 500);
+          }, 200);
         }
       }
       tick();
